@@ -21,18 +21,18 @@ namespace
 	static FString BuildSpecialAgentInstructions()
 	{
 		// Balanced instructions - comprehensive but concise
-		return TEXT(
-			"SpecialAgent controls Unreal Editor. "
-			"WORKFLOW: 1) screenshot/capture to SEE viewport, 2) trace/select to GET 3D info, 3) act, 4) screenshot to VERIFY. "
-			"SCREEN COORDS: All screen tools use 0-1 percentage (0.5,0.5=center, 0.25,0.75=25% from left, 75% from top). "
-			"KEY TOOLS: "
-			"viewport/trace_from_screen(screen_x,screen_y) - get world location AND surface normal at any visible point. Use to find WHERE to place things and HOW to orient them. "
-			"utility/select_at_screen(screen_x,screen_y) - click to select actor, returns full info. "
-			"assets/get_bounds(asset_path) - get mesh dimensions, pivot_offset, bottom_z BEFORE spawning. Essential for correct placement height. "
-			"assets/get_info(asset_path) - get detailed asset info including materials, collision, LODs. "
-			"PLACEMENT: 1) trace_from_screen to get location+normal, 2) get_bounds to understand mesh pivot, 3) spawn ONE actor, 4) screenshot verify, 5) adjust rotation using normal. "
-			"ROTATION: Surface normal from trace tells you which way is 'up' for that surface - use to calculate actor rotation."
-		);
+	    return TEXT(
+	        "SpecialAgent controls Unreal Editor. "
+	        "WORKFLOW: 1) screenshot_capture to SEE viewport, 2) trace/select to GET 3D info, 3) act, 4) screenshot to VERIFY. "
+	        "SCREEN COORDS: All screen tools use 0-1 percentage (0.5,0.5=center, 0.25,0.75=25% from left, 75% from top). "
+	        "KEY TOOLS: "
+	        "viewport_trace_from_screen(screen_x,screen_y) - get world location AND surface normal at any visible point. Use to find WHERE to place things and HOW to orient them. "
+	        "utility_select_at_screen(screen_x,screen_y) - click to select actor, returns full info. "
+	        "assets_get_bounds(asset_path) - get mesh dimensions, pivot_offset, bottom_z BEFORE spawning. Essential for correct placement height. "
+	        "assets_get_info(asset_path) - get detailed asset info including materials, collision, LODs. "
+	        "PLACEMENT: 1) trace_from_screen to get location+normal, 2) get_bounds to understand mesh pivot, 3) spawn ONE actor, 4) screenshot verify, 5) adjust rotation using normal. "
+	        "ROTATION: Surface normal from trace tells you which way is 'up' for that surface - use to calculate actor rotation."
+	    );
 	}
 }
 
@@ -227,7 +227,7 @@ FMCPResponse FMCPRequestRouter::HandleToolsList(const FMCPRequest& Request)
 		for (const FMCPToolInfo& ToolInfo : ServiceTools)
 		{
 			TSharedPtr<FJsonObject> ToolObj = MakeShared<FJsonObject>();
-			ToolObj->SetStringField(TEXT("name"), FString::Printf(TEXT("%s/%s"), *ServicePair.Key, *ToolInfo.Name));
+					   ToolObj->SetStringField(TEXT("name"), FString::Printf(TEXT("%s_%s"), *ServicePair.Key, *ToolInfo.Name));
 			ToolObj->SetStringField(TEXT("description"), ToolInfo.Description);
 			
 			// Add input schema
@@ -267,13 +267,13 @@ FMCPResponse FMCPRequestRouter::HandleToolsCall(const FMCPRequest& Request)
 	FString ToolName = Request.Params->GetStringField(TEXT("name"));
 	TSharedPtr<FJsonObject> Arguments = Request.Params->GetObjectField(TEXT("arguments"));
 	
-	// Split tool name into service/method
-	FString ServicePrefix;
-	FString MethodName;
-	if (!ToolName.Split(TEXT("/"), &ServicePrefix, &MethodName))
-	{
-		return FMCPResponse::Error(Request.Id, -32602, TEXT("Invalid tool name format"));
-	}
+	       // Split tool name into service_method
+	       FString ServicePrefix;
+	       FString MethodName;
+	       if (!ToolName.Split(TEXT("_"), &ServicePrefix, &MethodName))
+	       {
+		       return FMCPResponse::Error(Request.Id, -32602, TEXT("Invalid tool name format"));
+	       }
 	
 	// Find service
 	TSharedPtr<IMCPService>* ServicePtr = Services.Find(ServicePrefix);
@@ -460,26 +460,26 @@ FMCPResponse FMCPRequestRouter::HandlePromptsGet(const FMCPRequest& Request)
 		
 		TSharedPtr<FJsonObject> Msg = MakeShared<FJsonObject>();
 		Msg->SetStringField(TEXT("role"), TEXT("user"));
-		Msg->SetStringField(TEXT("content"), FString::Printf(TEXT(
-			"Find and focus on actors matching '%s':\n"
-			"1. List actors and filter for ones matching the search term\n"
-			"2. Use viewport/focus_actor to frame each matching actor\n"
-			"3. Take a screenshot after focusing to show me the actor\n"
-			"4. Report what you found with key details (location, bounds, etc.)"
-		), *SearchTerm));
+		       Msg->SetStringField(TEXT("content"), FString::Printf(TEXT(
+			       "Find and focus on actors matching '%s':\n"
+			       "1. List actors and filter for ones matching the search term\n"
+			       "2. Use viewport_focus_actor to frame each matching actor\n"
+			       "3. Take a screenshot after focusing to show me the actor\n"
+			       "4. Report what you found with key details (location, bounds, etc.)"
+		       ), *SearchTerm));
 		Messages.Add(MakeShared<FJsonValueObject>(Msg));
 	}
 	else if (PromptName == TEXT("inspect_selection"))
 	{
 		TSharedPtr<FJsonObject> Msg = MakeShared<FJsonObject>();
 		Msg->SetStringField(TEXT("role"), TEXT("user"));
-		Msg->SetStringField(TEXT("content"), TEXT(
-			"Inspect the currently selected actors:\n"
-			"1. Use utility/get_selection to see what's selected\n"
-			"2. Use utility/get_selection_bounds to get detailed bounds and orientation\n"
-			"3. Focus on each selected actor and take a screenshot\n"
-			"4. Summarize the selection with key properties"
-		));
+		       Msg->SetStringField(TEXT("content"), TEXT(
+			       "Inspect the currently selected actors:\n"
+			       "1. Use utility_get_selection to see what's selected\n"
+			       "2. Use utility_get_selection_bounds to get detailed bounds and orientation\n"
+			       "3. Focus on each selected actor and take a screenshot\n"
+			       "4. Summarize the selection with key properties"
+		       ));
 		Messages.Add(MakeShared<FJsonValueObject>(Msg));
 	}
 	else if (PromptName == TEXT("place_objects"))
@@ -492,14 +492,14 @@ FMCPResponse FMCPRequestRouter::HandlePromptsGet(const FMCPRequest& Request)
 		
 		TSharedPtr<FJsonObject> Msg = MakeShared<FJsonObject>();
 		Msg->SetStringField(TEXT("role"), TEXT("user"));
-		Msg->SetStringField(TEXT("content"), FString::Printf(TEXT(
-			"Help me place objects in the level: %s\n\n"
-			"Use Python (python/execute) with the unreal module to:\n"
-			"1. First screenshot to see the current state\n"
-			"2. Use unreal.EditorLevelLibrary or unreal.EditorAssetLibrary as needed\n"
-			"3. Place/modify the requested objects\n"
-			"4. Screenshot again to verify the results"
-		), *Description));
+		       Msg->SetStringField(TEXT("content"), FString::Printf(TEXT(
+			       "Help me place objects in the level: %s\n\n"
+			       "Use Python (python_execute) with the unreal module to:\n"
+			       "1. First screenshot to see the current state\n"
+			       "2. Use unreal.EditorLevelLibrary or unreal.EditorAssetLibrary as needed\n"
+			       "3. Place/modify the requested objects\n"
+			       "4. Screenshot again to verify the results"
+		       ), *Description));
 		Messages.Add(MakeShared<FJsonValueObject>(Msg));
 	}
 	else
