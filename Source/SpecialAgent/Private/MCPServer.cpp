@@ -33,13 +33,10 @@ bool FSpecialAgentMCPServer::StartServer(int32 Port)
 
 	// Get the HTTP server module
 	FHttpServerModule& HttpServerModule = FHttpServerModule::Get();
-	
-	// Start listeners on the specified port
-	HttpServerModule.StartAllListeners();
-	
-	// Get the HTTP router for our port
+
+	// UE 5.7: Get router FIRST, bind routes, THEN start listeners
 	HttpRouter = HttpServerModule.GetHttpRouter(ServerPort);
-	
+
 	if (!HttpRouter.IsValid())
 	{
 		UE_LOG(LogTemp, Error, TEXT("SpecialAgent: Failed to get HTTP router for port %d"), ServerPort);
@@ -99,6 +96,9 @@ bool FSpecialAgentMCPServer::StartServer(int32 Port)
 		EHttpServerRequestVerbs::VERB_OPTIONS,
 		FHttpRequestHandler::CreateRaw(this, &FSpecialAgentMCPServer::HandleCORS)
 	);
+
+	// UE 5.7: Start listeners AFTER all routes are bound
+	HttpServerModule.StartAllListeners();
 
 	bIsRunning = true;
 	UE_LOG(LogTemp, Log, TEXT("SpecialAgent: MCP HTTP Server started on port %d"), ServerPort);

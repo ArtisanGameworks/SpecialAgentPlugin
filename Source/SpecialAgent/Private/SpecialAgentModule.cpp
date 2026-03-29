@@ -28,10 +28,12 @@ void FSpecialAgentModule::StartupModule()
 	int32 ServerPort = 8767;  // HTTP/SSE port for MCP client connections
 	
 	// Try to read from config (may not exist yet)
+	// UE 5.7: Use explicit config file path instead of GGameIni
 	if (GConfig)
 	{
-		GConfig->GetBool(TEXT("/Script/SpecialAgent.SpecialAgentSettings"), TEXT("ServerEnabled"), bAutoStart, GGameIni);
-		GConfig->GetInt(TEXT("/Script/SpecialAgent.SpecialAgentSettings"), TEXT("ServerPort"), ServerPort, GGameIni);
+		const FString ConfigPath = FPaths::ProjectConfigDir() / TEXT("DefaultSpecialAgent.ini");
+		GConfig->GetBool(TEXT("/Script/SpecialAgent.SpecialAgentSettings"), TEXT("ServerEnabled"), bAutoStart, ConfigPath);
+		GConfig->GetInt(TEXT("/Script/SpecialAgent.SpecialAgentSettings"), TEXT("ServerPort"), ServerPort, ConfigPath);
 	}
 	
 	UE_LOG(LogTemp, Log, TEXT("SpecialAgent: ServerEnabled=%d, ServerPort=%d"), bAutoStart, ServerPort);
@@ -90,17 +92,32 @@ void FSpecialAgentModule::RegisterStatusBarWidget()
 	if (StatusBarMenu)
 	{
 		TSharedPtr<FSpecialAgentMCPServer> Server = MCPServer;
-		
-		FToolMenuSection& Section = StatusBarMenu->FindOrAddSection(TEXT("SpecialAgent"));
-		Section.AddEntry(FToolMenuEntry::InitWidget(
-			TEXT("MCPStatus"),
-			SNew(SMCPStatusBarWidget, Server),
-			FText::GetEmpty(),
-			true,  // bNoIndent
-			false  // bSearchable
-		));
-		
-		UE_LOG(LogTemp, Log, TEXT("SpecialAgent: Status bar widget registered via ToolMenus"));
+
+		// UE 5.7: FindOrAddSection() was removed. Use AddSection() + FindSection() pattern.
+		const FName SectionName = TEXT("SpecialAgent");
+		FToolMenuSection* Section = StatusBarMenu->FindSection(SectionName);
+		if (!Section)
+		{
+			StatusBarMenu->AddSection(SectionName, LOCTEXT("SpecialAgentSection", "SpecialAgent"));
+			Section = StatusBarMenu->FindSection(SectionName);
+		}
+
+		if (Section)
+		{
+			Section->AddEntry(FToolMenuEntry::InitWidget(
+				TEXT("MCPStatus"),
+				SNew(SMCPStatusBarWidget, Server),
+				FText::GetEmpty(),
+				true,  // bNoIndent
+				false  // bSearchable
+			));
+
+			UE_LOG(LogTemp, Log, TEXT("SpecialAgent: Status bar widget registered via ToolMenus"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SpecialAgent: Could not create ToolMenu section"));
+		}
 	}
 	else
 	{
