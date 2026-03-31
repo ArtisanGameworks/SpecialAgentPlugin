@@ -64,9 +64,9 @@ Describe intent → Execute → Screenshot → AI analyzes → Iterate
 
 ### Requirements
 
-- Unreal Engine 5.6 or later
+- Unreal Engine 5.6 or later (includes UE 5.7 compatibility fixes)
 - Windows, Mac, or Linux
-- MCP-compatible client (Cursor, Claude Desktop, etc.)
+- MCP-compatible client (Claude Code, Claude Desktop, Cursor, etc.)
 
 ### Setup
 
@@ -77,13 +77,44 @@ Describe intent → Execute → Screenshot → AI analyzes → Iterate
        └── SpecialAgent/
    ```
 
-2. **Regenerate project files** (right-click `.uproject` → Generate Visual Studio/Xcode project files)
+2. **Enable required plugins** in your `.uproject` file (or via Edit → Plugins):
+   - `PythonScriptPlugin` — required for Python execution
+   - `EditorScriptingUtilities` — required for editor scripting API
 
-3. **Build and launch** your project
+   To enable via `.uproject`, add these entries to the `"Plugins"` array:
+   ```json
+   {
+       "Name": "PythonScriptPlugin",
+       "Enabled": true
+   },
+   {
+       "Name": "EditorScriptingUtilities",
+       "Enabled": true
+   }
+   ```
 
-4. **Enable the plugin** in Edit → Plugins → Search "SpecialAgent"
+3. **Regenerate project files** (right-click `.uproject` → Generate Visual Studio/Xcode project files)
 
-5. **Restart** the editor
+4. **Build and launch** your project
+
+5. **Enable SpecialAgent** in Edit → Plugins → Search "SpecialAgent"
+
+6. **Restart** the editor
+
+### UE 5.7 Notes
+
+If you are using **Unreal Engine 5.7+**, be aware of these API changes that affect Python scripts:
+
+- **`EditorLevelLibrary` is removed.** Use subsystems instead:
+  ```python
+  # UE 5.6 (deprecated):
+  unreal.EditorLevelLibrary.spawn_actor_from_class(...)
+
+  # UE 5.7+:
+  subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+  subsystem.spawn_actor_from_class(...)
+  ```
+- All 5.7-specific fixes are already applied in this branch. See [UE57_FIXES.md](UE57_FIXES.md) for details.
 
 ---
 
@@ -262,7 +293,7 @@ Both layers work together: quick tools for common tasks, unlimited scripting for
 
 | Specification | Value |
 |--------------|-------|
-| Engine Version | UE 5.6+ |
+| Engine Version | UE 5.6–5.7+ |
 | Platforms | Windows, Mac, Linux |
 | Module Type | Editor |
 | Transport | HTTP/SSE (native) |

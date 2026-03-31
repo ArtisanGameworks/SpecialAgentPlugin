@@ -26,7 +26,7 @@ TArray<FMCPToolInfo> FPythonService::GetAvailableTools() const
 	{
 		FMCPToolInfo Tool;
 		Tool.Name = TEXT("execute");
-		Tool.Description = TEXT("Execute Python with full UE5 API. Use for: spawning actors (unreal.EditorLevelLibrary), modifying properties, batch operations, anything not covered by other tools. Import 'unreal' module is automatic.");
+		Tool.Description = TEXT("Execute Python with full UE5 API. Use for: spawning actors (unreal.get_editor_subsystem(unreal.EditorActorSubsystem)), modifying properties, batch operations, anything not covered by other tools. Import 'unreal' module is automatic.");
 		
 		TSharedPtr<FJsonObject> CodeParam = MakeShared<FJsonObject>();
 		CodeParam->SetStringField(TEXT("type"), TEXT("string"));

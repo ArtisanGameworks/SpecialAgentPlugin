@@ -9,7 +9,9 @@
 #include "Editor.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/WorldSettings.h"
-#include "EditorLevelLibrary.h"
+// UE 5.7: EditorLevelLibrary is deprecated; use subsystems instead
+#include "Subsystems/EditorActorSubsystem.h"
+#include "Subsystems/UnrealEditorSubsystem.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/StaticMesh.h"

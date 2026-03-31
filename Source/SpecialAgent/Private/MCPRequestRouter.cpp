@@ -496,7 +496,7 @@ FMCPResponse FMCPRequestRouter::HandlePromptsGet(const FMCPRequest& Request)
 			"Help me place objects in the level: %s\n\n"
 			"Use Python (python/execute) with the unreal module to:\n"
 			"1. First screenshot to see the current state\n"
-			"2. Use unreal.EditorLevelLibrary or unreal.EditorAssetLibrary as needed\n"
+			"2. Use unreal.get_editor_subsystem(unreal.EditorActorSubsystem) for actor ops, unreal.EditorAssetLibrary for assets\n"
 			"3. Place/modify the requested objects\n"
 			"4. Screenshot again to verify the results"
 		), *Description));
